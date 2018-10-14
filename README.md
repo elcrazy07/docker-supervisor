@@ -23,7 +23,7 @@ Ubuntu 14.04
 
 ### How to Build
 
-Simply `docker build -t your_image_name https://github.com/dicotraining/docker-sample.git`
+Simply `docker build -t your_image_name https://github.com/elcrazy07/docker-sample.git`
 
 That's all
 
