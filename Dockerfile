@@ -1,5 +1,5 @@
 FROM        ubuntu:14.04
-MAINTAINER  Dicotraining info@dicotraining.com
+MAINTAINER  Elcrazy07 info@dicotraining.com
 
 
 # Update the package repository
@@ -14,14 +14,14 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y wget curl
 RUN apt-get update; apt-get install -y php5-cli php5 php5-mcrypt php5-curl php5-pgsql
 
 # Install openssh
-RUN apt-get install -y openssh-server supervidor
+RUN apt-get install -y openssh-server supervisor
 RUN mkdir -p /var/run/sshd
 
 # Add the student user with sudo permission
 RUN useradd -m -d /home/student -s /bin/bash student
 RUN echo student:student | chpasswd
 RUN usermod -aG sudo student
-RUN sed -i '/PermitRootLogin without-password/PermitRootLogin no/' /etc/ssh/sshd_config
+RUN sed -i 's/PermitRootLogin without-password/PermitRootLogin yes/' /etc/ssh/sshd_config
 
 # Configuracion of the supervisor
 RUN mkdir -p /var/log/supervisor
@@ -46,5 +46,4 @@ ENV APACHE_DOCUMENTROOT /var/www
 
 EXPOSE 80 22
 COPY ./scripts/info.php /var/www/html/info.php
-CMD ["/usr/bin/supervidord", "-c", "/etc/supervisor/supervisord.conf"]
-
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]
