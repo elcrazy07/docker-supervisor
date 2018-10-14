@@ -1,19 +1,33 @@
 FROM        ubuntu:14.04
 MAINTAINER  Dicotraining info@dicotraining.com
- 
+
 
 # Update the package repository
-RUN apt-get update -y && apt-get upgrade -y
+RUN apt-get update -y && apt-get upgrade -yqq
 
 
 # Install base system
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y wget curl 
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y wget curl
 
- 
+
 # Install PHP 5.5
 RUN apt-get update; apt-get install -y php5-cli php5 php5-mcrypt php5-curl php5-pgsql
- 
 
+# Install openssh
+RUN apt-get install -y openssh-server supervidor
+RUN mkdir -p /var/run/sshd
+
+# Add the student user with sudo permission
+RUN useradd -m -d /home/student -s /bin/bash student
+RUN echo student:student | chpasswd
+RUN usermod -aG sudo student
+RUN sed -i '/PermitRootLogin without-password/PermitRootLogin no/' /etc/ssh/sshd_config
+
+# Configuracion of the supervisor
+RUN mkdir -p /var/log/supervisor
+COPY ./supervisord.conf /etc/supervisor/supervisord.conf
+
+# Configure apache
 ADD ./config/001-docker.conf /etc/apache2/sites-available/
 RUN ln -s /etc/apache2/sites-available/001-docker.conf /etc/apache2/sites-enabled/
 
@@ -30,8 +44,7 @@ ENV APACHE_SERVERNAME localhost
 ENV APACHE_SERVERALIAS docker.localhost
 ENV APACHE_DOCUMENTROOT /var/www
 
-EXPOSE 80
-ADD ./scripts/info.php /var/www/html/info.php
-ADD ./scripts/start.sh /start.sh
-RUN chmod 0755 /start.sh
-CMD ["bash", "start.sh"]
+EXPOSE 80 22
+COPY ./scripts/info.php /var/www/html/info.php
+CMD ["/usr/bin/supervidord", "-c", "/etc/supervisor/supervisord.conf"]
+
